@@ -37,9 +37,11 @@ func main() {
 				DB:       db,
 			})
 			fmt.Printf("%s start\n", consumerName)
+			initialMessage := rdb.XRead(ctx, &redis.XReadArgs{Streams: []string{key, "$"}, Count: 1, Block: 0})
 
 			for {
-				streams := rdb.XRead(ctx, &redis.XReadArgs{Streams: []string{key, "$"}, Block: 0})
+				cursorId := initialMessage.Val()[0].Messages[0].ID
+				streams := rdb.XRead(ctx, &redis.XReadArgs{Streams: []string{key, cursorId}, Count: 1, Block: 0})
 				for _, message := range streams.Val()[0].Messages {
 					for key := range message.Values {
 						recordTime, _ := strconv.ParseInt(key, 10, 64)
