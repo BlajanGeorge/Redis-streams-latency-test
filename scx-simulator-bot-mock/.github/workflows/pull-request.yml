@@ -1,0 +1,48 @@
+name: 'Pull Request'
+
+on:
+  workflow_dispatch:
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  analysis:
+    runs-on: self-hosted
+    name: Analysis
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.pull_request.head.ref }}
+
+      - uses: actions/setup-java@v3
+        with:
+          distribution: 'corretto'
+          java-version: '17'
+
+      - name: Cache SonarCloud packages
+        uses: actions/cache@v3
+        with:
+          path: ~/.sonar/cache
+          key: ${{ runner.os }}-sonar
+          restore-keys: ${{ runner.os }}-sonar
+
+      - name: Cache Maven packages
+        uses: actions/cache@v3
+        with:
+          path: ~/.m2
+          key: ${{ runner.os }}-m2
+          restore-keys: ${{ runner.os }}-m2
+
+      - name: Bump version
+        run: mvn versions:set -DnewVersion="$(./determine_version.sh)"
+
+      - name: Sonar scan
+        run: mvn -U -s .maven_settings.xml -B verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -Dsonar.projectKey=SentioCX_scx-simulator_bot_mock -Dsonar.qualitygate.wait=true -Pcoverage
+        env:
+          GITHUB_TOKEN: ${{ secrets.APANA_GITHUB_TOKEN }}  # Needed to get PR information, if any
+          MAVEN_USERNAME: ${{ secrets.MAVEN_USERNAME }}
+          SONAR_TOKEN: ${{ secrets.CAGSENTIO_SONAR_TOKEN }}
+          MAVEN_PASSWORD: ${{ secrets.MAVEN_PASSWORD }}

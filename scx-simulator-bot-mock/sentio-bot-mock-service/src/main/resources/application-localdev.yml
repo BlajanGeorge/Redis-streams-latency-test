@@ -1,0 +1,20 @@
+server.port: 8092
+
+scx:
+  platform:
+    name: local
+    url: http://localhost:8092
+  oauth2:
+    resourceserver:
+      issuer-uri: http://localhost:9000
+      jwk-set-uri: http://localhost:9000/api/v1/oauth2/jwk-set
+    client:
+      id: live-reporting
+      secret: live-reporting-secret
+      access-token-uri: http://authorization/api/v1/oauth2/token
+
+spring:
+  cloud.discovery.client.simple.instances:
+    authorization:
+      - host: localhost
+        port: 9000
