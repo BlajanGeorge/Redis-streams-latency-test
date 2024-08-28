@@ -58,7 +58,6 @@ func main() {
 		}(fmt.Sprintf("consumer-%d", i))
 	}
 
-	//let consumers start first
 	time.Sleep(1 * time.Second)
 
 	for i := 0; i < producers; i++ {
