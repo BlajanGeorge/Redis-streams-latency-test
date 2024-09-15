@@ -78,4 +78,5 @@ func main() {
 		}(fmt.Sprintf("producer-%d", i))
 	}
 	wg.Wait()
+
 }
